@@ -1,0 +1,155 @@
+/* 🌟 GENERAL STYLE */
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 🌟 LOGIN & SIGNUP BACKGROUND */
+body.login-page {
+  background-color: #d7e9ff;
+  background-image: url("../img/background.jpg"); /* Adjusted path from login.php */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+
+  /* --- Centering Styles --- */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* ------------------------ */
+}
+
+/* 🌟 ZPPSU LOGO */
+.top-logo {
+  width: 110px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+/* 🌟 LOGIN / SIGNUP BOX */
+.login-container {
+  width: 350px;
+  background-color: rgba(255, 255, 255, 0.574);
+  backdrop-filter: blur(2px);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: fadeIn 1s ease-in;
+}
+
+.login-container h1 {
+  color: #800000;
+  font-size: 30px;
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+.login-container h2 {
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* 🌟 INPUTS */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #999;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+/* 🌟 SUBMIT BUTTON */
+input[type="submit"],
+button {
+  width: 100%;
+  padding: 12px;
+  background: #800000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 15px;
+  font-weight: 500;
+  font-family: "Poppins", sans-serif;
+}
+
+input[type="submit"]:hover,
+button:hover {
+  background: #570000;
+}
+
+/* 🌟 SIGNUP LINK */
+.login-container p {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.login-container p a {
+  color: #980000;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* 🌟 ERROR MESSAGES */
+/* This styles the <p> tags inside the form */
+.login-container form p {
+  color: red;
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  text-align: left;
+  padding-left: 5px;
+}
+
+/* 🌟 FADE-IN ANIMATION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =================================
+  MOBILE RESPONSIVENESS
+=================================
+*/
+@media (max-width: 480px) {
+  .top-logo {
+    width: 80px; /* Make the logo smaller on mobile */
+    top: 15px; /* Adjust top position */
+    right: 15px; /* Adjust right position */
+  }
+
+  .login-container {
+    width: 90%; /* Use percentage for width instead of fixed pixels */
+    max-width: 350px; /* Ensure it doesn't get wider than the design */
+    padding: 25px; /* Slightly reduce padding on small screens */
+    box-sizing: border-box; /* Include padding in width calculation */
+  }
+
+  .login-container h1 {
+    font-size: 26px; /* Make the title a bit smaller */
+  }
+
+  .login-container h2 {
+    font-size: 18px; /* Make the subtitle a bit smaller */
+  }
+}

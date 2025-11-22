@@ -1,0 +1,129 @@
+/* 🌟 GENERAL STYLE */
+body {
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* 🌟 LOGIN & SIGNUP BACKGROUND — CUTE BOOKS */
+body.login-page {
+    background-color: #d7e9ff;  
+    background-size: 260px;
+    background-repeat: repeat;
+}
+
+/* 🌟 ZPPSU LOGO */
+.top-logo {
+    width: 110px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+/* 🌟 LOGIN / SIGNUP BOX */
+.login-container {
+    width: 350px;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+    margin: 120px auto;
+    text-align: center;
+    animation: fadeIn 1s ease-in;
+}
+
+.login-container h1 {
+    color: #1a56f0;
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
+.login-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* 🌟 INPUTS */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #999;
+    font-size: 15px;
+}
+
+/* 🌟 BUTTON */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #1a56f0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #003ba8;
+}
+
+/* 🌟 SIGNUP LINK */
+.signup-text {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.signup-text a {
+    color: #1a56f0;
+    text-decoration: none;
+}
+
+/* 🌟 DASHBOARD (Admin, Librarian, Borrower) */
+.dashboard {
+    max-width: 500px;
+    margin: 120px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+.dashboard h1 {
+    color: #1a56f0;
+    margin-bottom: 10px;
+}
+
+.dashboard h3 {
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+/* 🌟 DASHBOARD BUTTONS */
+.dash-buttons button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background: #1a56f0;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.dash-buttons button:hover {
+    background: #003ba8;
+}
+
+/* 🌟 FADE-IN ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
