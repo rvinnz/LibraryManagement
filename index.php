@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="assets/icons/favicon.png">
     <style>
-        /* Simple Internal CSS */
+        /* Internal CSS */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
             height: 100vh;
-            /* Darkened overlay so text pops */
+            /* Darkened overlay */
             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('assets/img/background.jpg');
             background-size: cover;
             background-position: center;
@@ -47,13 +47,11 @@
             line-height: 1.6;
         }
 
-        /* Button Container to sit side-by-side */
         .button-group {
             display: flex;
             gap: 20px;
         }
 
-        /* Common Button Styles */
         .btn {
             padding: 14px 40px;
             font-size: 18px;
@@ -64,9 +62,8 @@
             border: 2px solid transparent;
         }
 
-        /* Primary Button (Log In) - Maroon */
         .btn-primary {
-            background-color: #800000; /* ZPPSU Maroon */
+            background-color: #800000;
             color: white;
             border-color: #800000;
         }
@@ -78,7 +75,6 @@
             box-shadow: 0 5px 15px rgba(128, 0, 0, 0.4);
         }
 
-        /* Secondary Button (Sign Up) - Transparent/White */
         .btn-secondary {
             background-color: transparent;
             color: white;

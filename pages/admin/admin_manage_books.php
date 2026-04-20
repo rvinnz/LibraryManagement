@@ -1,17 +1,14 @@
 <?php 
-require_once "../../classes/books.php";
 session_start();
-
-// Updated Check: Uses is_admin !== 1
+// Uses is_admin !== 1
 if (!isset($_SESSION['username']) || $_SESSION['is_admin'] !== 1) {
     header("Location: ../../login.php");
     exit;
 }
-$admin_username = $_SESSION['username'];
+require_once "../../classes/books.php";
 
 $bookObj = new Books();
-
-// Initialize variables
+// rest of existing logic
 $book = [
     'id' => '',
     'title' => '',
@@ -20,71 +17,82 @@ $book = [
     'genre' => ''
 ];
 $error = [];
-$message = "";
 $isEditing = false;
 
-// 1. Handle DELETE Request (GET)
+$swal_message = "";
+$swal_type = "";
+
+if (isset($_SESSION['swal_message'])) {
+    $swal_message = $_SESSION['swal_message'];
+    $swal_type = $_SESSION['swal_type']; // 'success' or 'error'
+    unset($_SESSION['swal_message']);
+    unset($_SESSION['swal_type']);
+}
+
+// Handle DELETE Request
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     if($bookObj->deleteBook($id)){
-        $message = "Book deleted successfully!";
+        $_SESSION['swal_message'] = "Book deleted successfully!";
+        $_SESSION['swal_type'] = "success";
+        header("Location: admin_manage_books.php");
+        exit;
     } else {
         $error['error'] = "Failed to delete book.";
     }
 }
 
-// 2. Handle EDIT Request (GET) - Populates the form
+// Handle EDIT Request
 if (isset($_GET['edit'])) {
     $isEditing = true;
     $id = $_GET['edit'];
     $fetchedBook = $bookObj->fetchBook($id);
     if ($fetchedBook) {
-        $book = $fetchedBook; // Fill form with existing data
+        $book = $fetchedBook;
     }
 }
 
-// 3. Handle FORM SUBMISSION (POST)
+// Handle FORM SUBMISSION
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $book["title"] = $_POST["title"] ?? "";
     $book["author"] = $_POST["author"] ?? "";
-    $book["published_date"] = $_POST["published"] ?? ""; // Note: input name is 'published'
+    $book["published_date"] = $_POST["published"] ?? ""; 
     $book["genre"] = $_POST["genre"] ?? "";
-    $book_id = $_POST["book_id"] ?? ""; // Hidden ID field
+    $book_id = $_POST["book_id"] ?? ""; 
 
-    // Validation
     if(empty($book["title"]) || empty($book["author"]) || empty($book['published_date']) || empty($book['genre'])){
         $error['all'] = "All Input Fields are required!";
     }
 
     if(empty($error)){
         try {
-            // Set object properties
             $bookObj->title = $book["title"];
             $bookObj->author = $book["author"];
             $bookObj->published_date = $book["published_date"];
             $bookObj->genre = $book["genre"];
 
             if (!empty($book_id)) {
-                // --- UPDATE EXISTING BOOK ---
+                // --- UPDATE ---
                 $bookObj->updateBook($book_id);
-                $message = "Successfully Updated Book!";
-                $isEditing = false; // Reset mode
-                // Clear form data after update
-                $book = ['id' => '', 'title' => '', 'author' => '', 'published_date' => '', 'genre' => ''];
+                $_SESSION['swal_message'] = "Successfully Updated Book!";
+                $_SESSION['swal_type'] = "success";
             } else {
-                // --- INSERT NEW BOOK ---
+                // --- CREATE ---
                 $bookObj->insertBook();
-                $message = "Successfully Inserted Book!";
-                // Clear form data
-                $book = ['id' => '', 'title' => '', 'author' => '', 'published_date' => '', 'genre' => ''];
+                $_SESSION['swal_message'] = "Successfully Inserted Book!";
+                $_SESSION['swal_type'] = "success";
             }
+            
+            // Redirect to clear POST data
+            header("Location: admin_manage_books.php");
+            exit;
+
         } catch(Exception $e) {
             $error["error"] = $e->getMessage();
         }
     }
 }
 
-// Refresh list after actions
 $displayBook = $bookObj->displayBooks();
 ?>
 
@@ -97,8 +105,11 @@ $displayBook = $bookObj->displayBooks();
     <link rel="stylesheet" href="../../assets/css/adminpage.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.png">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
+    <!-- Hardcoded Button & Overlay -->
     <div class="sidebar-overlay"></div>
     <button id="sidebarToggleBtn" type="button">&#9776;</button>
 
@@ -108,7 +119,7 @@ $displayBook = $bookObj->displayBooks();
       <nav class="sidebar">
         <div class="sidebar-header">
           <h3>Admin Panel</h3>
-          <p>Welcome, <?= htmlspecialchars($admin_username) ?>!</p>
+          <p>Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</p>
         </div>
         <ul class="sidebar-links">
           <li><a href="admin_dashboard.php">Dashboard</a></li>
@@ -128,11 +139,37 @@ $displayBook = $bookObj->displayBooks();
         <section class="content-card">
           <h2><?= $isEditing ? "Edit Book" : "Add New Book" ?></h2>
           
-          <form id="add-book-form" method="post">
-            <p class="error"><?= $error['all'] ?? ""?></p>
-            <p class="error"><?= $error['error'] ?? ""?></p>
-            <p class="message" style="color: green"><?= $message ?? "" ?></p>
+          <!-- SweetAlert Trigger Script -->
+          <?php if(!empty($swal_message)): ?>
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      Swal.fire({
+                          icon: '<?= $swal_type ?>',
+                          title: '<?= $swal_type === "success" ? "Success!" : "Error!" ?>',
+                          text: '<?= addslashes($swal_message) ?>',
+                          timer: 2000,
+                          showConfirmButton: false
+                      });
+                  });
+              </script>
+          <?php endif; ?>
 
+          <!-- PHP Error Display (Fallback) -->
+          <?php if(!empty($error)): ?>
+             <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      let errorMsg = '<?= addslashes(implode(" ", $error)) ?>';
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: errorMsg
+                      });
+                  });
+              </script>
+          <?php endif; ?>
+
+          <form id="add-book-form" method="post">
+            
             <input type="hidden" name="book_id" value="<?= $book['id'] ?? '' ?>">
 
             <div class="form-row">
@@ -156,7 +193,7 @@ $displayBook = $bookObj->displayBooks();
                 <input type="text" name="genre" value="<?= htmlspecialchars($book['genre']) ?>">
               </div>
             </div>
-            <input type="submit" value="<?= $isEditing ? "Update Book" : "Add Book" ?>" 
+            <input type="submit" value="<?= $isEditing ? "Update Book" : "Add Book" ?>" class="btn-primary"
                    class="<?= $isEditing ? 'btn-edit' : '' ?>"> <?php if($isEditing): ?>
                 <a href="admin_manage_books.php" style="text-decoration: none; font-size: 14px; color: #555; margin-left: 10px;">Cancel</a>
             <?php endif; ?>
@@ -186,10 +223,10 @@ $displayBook = $bookObj->displayBooks();
                 <td><?= htmlspecialchars($b['published_date']) ?></td>
                 <td><?= htmlspecialchars($b['genre']) ?></td>
                 <td>
-                    <a href="admin_manage_books.php?edit=<?= $b['id'] ?>" class="btn-action btn-edit" style="text-decoration:none;">Edit</a>
+                    <a href="admin_manage_books.php?edit=<?= $b['id'] ?>" class="btn-action btn-edit">Edit</a>
                     
                     <a href="admin_manage_books.php?delete=<?= $b['id'] ?>" 
-                       class="btn-action btn-delete" 
+                       class="btn-action btn-delete btn-delete-swal" 
                        style="text-decoration:none;">Delete</a>
                 </td>
             </tr>
@@ -205,6 +242,7 @@ $displayBook = $bookObj->displayBooks();
       </main>
     </div>
     <script src="../../assets/js/logout.js"></script>
+    
     <script src="../../assets/js/delete_confirmation.js"></script>
     <script src="../../assets/js/admin_sidebar_toggle.js"></script>
   </body>

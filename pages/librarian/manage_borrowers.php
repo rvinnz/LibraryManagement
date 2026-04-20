@@ -23,7 +23,7 @@ $error = [];
 $message = "";
 $isEditing = false;
 
-// 1. Handle DELETE
+// Handle DELETE
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     if ($borrowerObj->deleteBorrower($id)) {
@@ -33,7 +33,7 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// 2. Handle EDIT (Populate Form)
+// Handle EDIT (Populate Form)
 if (isset($_GET['edit'])) {
     $isEditing = true;
     $id = $_GET['edit'];
@@ -43,7 +43,7 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// 3. Handle FORM SUBMISSION (Add or Update)
+// Handle FORM SUBMISSION (Add or Update)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $b_id = $_POST['b_id'] ?? '';
     $first_name = $_POST['first_name'] ?? '';
@@ -101,31 +101,31 @@ $allBorrowers = $borrowerObj->displayBorrowers();
     <link rel="stylesheet" href="../../assets/css/librarian.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.png">
-    <style>
-        /* Force Admin-like layout styles */
-        .form-row { display: flex; gap: 20px; margin-bottom: 15px; }
-        .form-group { display: flex; flex-direction: column; flex: 1; }
-        .form-group label { font-weight: 500; margin-bottom: 8px; font-size: 14px; }
-        .form-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; font-family: "Poppins", sans-serif; box-sizing: border-box; }
-    </style>
+    
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
+    <!-- Sidebar Elements -->
+    <div class="sidebar-overlay"></div>
+    <button id="sidebarToggleBtn" type="button">&#9776;</button>
+
     <img src="../../assets/img/Zamboanga_Peninsula_Polytechnic_State_University.png" alt="ZPPSU Logo" class="top-logo" />
 
     <div class="panel-container">
-      <!-- SIDEBAR -->
       <nav class="sidebar">
         <div class="sidebar-header">
           <h3>Librarian Panel</h3>
-          <p>User: <?= htmlspecialchars($_SESSION['username']) ?></p>
+          <p>Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</p>
         </div>
         <ul class="sidebar-links">
           <li><a href="librarian.php">Dashboard</a></li>
           <li><a href="issue_book.php">Issue Books</a></li>
           <li><a href="return_book.php">Return Books</a></li>
           <li><a href="manage_books.php">Manage Books</a></li>
-          <li><a href="manage_borrowers.php" class="active">View Borrowers</a></li> <!-- Active -->
-          <li class="logout-link"><a href="../../login.php">Log Out</a></li>
+          <li><a href="manage_borrowers.php" class="active">View Borrowers</a></li>
+          <li><a href="view_logs.php">View Logs</a></li>
+          <li class="logout-link"><a href="../../logout.php">Log Out</a></li>
         </ul>
       </nav>
 
@@ -138,19 +138,39 @@ $allBorrowers = $borrowerObj->displayBorrowers();
         <section class="content-card">
           <h2><?= $isEditing ? "Edit Borrower Details" : "Register New Borrower" ?></h2>
           
+          <?php if($message): ?>
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      Swal.fire({
+                          icon: 'success',
+                          title: 'Success',
+                          text: '<?= addslashes($message) ?>',
+                          timer: 2000,
+                          showConfirmButton: false
+                      });
+                  });
+              </script>
+          <?php endif; ?>
+          
+          <?php if(!empty($error)): ?>
+             <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      let errorMsg = '<?= addslashes(implode(" ", $error)) ?>';
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: errorMsg
+                      });
+                  });
+              </script>
+          <?php endif; ?>
+
           <form id="add-borrower-form" method="post">
-            <!-- Message Container -->
-            <div class="message-container" style="margin-bottom: 20px; margin-top: 5px; min-height: 20px;">
-                <p class="error"><?= $error['all'] ?? ""?></p>
-                <p class="error"><?= $error['year'] ?? ""?></p>
-                <p class="error"><?= $error['error'] ?? ""?></p>
-                <p class="message" style="color: green; margin: 0;"><?= $message ?? "" ?></p>
-            </div>
             
             <input type="hidden" name="b_id" value="<?= $borrower['id'] ?? '' ?>">
 
-            <!-- Row 1: Names -->
-            <div class="form-row">
+            <!-- Row 1 -->
+            <div class="form-row col-3">
               <div class="form-group">
                 <label for="first_name">First Name</label>
                 <input type="text" id="first_name" name="first_name" value="<?= htmlspecialchars($borrower['first_name']) ?>" required />
@@ -165,8 +185,8 @@ $allBorrowers = $borrowerObj->displayBorrowers();
               </div>
             </div>
 
-            <!-- Row 2: Academic Info -->
-            <div class="form-row">
+            <!-- Row 2 -->
+            <div class="form-row col-3">
               <div class="form-group">
                 <label for="course">Course</label>
                 <input type="text" id="course" name="course" placeholder="e.g. BSIT" value="<?= htmlspecialchars($borrower['course']) ?>" required />
@@ -175,7 +195,7 @@ $allBorrowers = $borrowerObj->displayBorrowers();
                 <label for="year">Year Level</label>
                 <input type="number" id="year" name="year" min="1" max="4" placeholder="1-4" value="<?= htmlspecialchars($borrower['year']) ?>" required />
               </div>
-              <div class="form-group" style="flex: 1.5;">
+              <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" value="<?= htmlspecialchars($borrower['email']) ?>" required />
               </div>
@@ -183,7 +203,7 @@ $allBorrowers = $borrowerObj->displayBorrowers();
             
             <button type="submit" class="btn-primary" style="margin-top: 10px;"><?= $isEditing ? "Update Borrower" : "Register Borrower" ?></button>
             <?php if($isEditing): ?>
-                <a href="view_borrowers.php" style="margin-left:15px; text-decoration:none; color:#666; font-size: 14px;">Cancel</a>
+                <a href="manage_borrowers.php" style="margin-left:15px; text-decoration:none; color:#666; font-size: 14px;">Cancel</a>
             <?php endif; ?>
           </form>
         </section>
@@ -211,14 +231,10 @@ $allBorrowers = $borrowerObj->displayBorrowers();
                 <td><?= htmlspecialchars($b['course'] . " - " . $b['year']) ?></td>
                 <td><?= htmlspecialchars($b['email']) ?></td>
                 <td>
-                  <a href="manage_borrowers.php?edit=<?= $b['id'] ?>" 
-                     class="btn-secondary" 
-                     style="padding: 6px 12px; text-decoration: none; font-size: 13px; border: none;">Edit</a>
+                  <a href="manage_borrowers.php?edit=<?= $b['id'] ?>" class="btn-action btn-edit">Edit</a>
                   
                   <a href="manage_borrowers.php?delete=<?= $b['id'] ?>" 
-                     onclick="return confirm('Are you sure you want to remove this borrower?');" 
-                     class="btn-secondary"
-                     style="padding: 6px 12px; text-decoration: none; font-size: 13px; color: #c92a2a; background: #fff5f5; border: 1px solid #ffc9c9;">Delete</a>
+                     class="btn-action btn-delete btn-delete-swal">Delete</a>
                 </td>
               </tr>
               <?php 
@@ -232,5 +248,8 @@ $allBorrowers = $borrowerObj->displayBorrowers();
         </section>
       </main>
     </div>
+    <script src="../../assets/js/logout.js"></script>
+    <script src="../../assets/js/delete_confirmation.js"></script>
+    <script src="../../assets/js/admin_sidebar_toggle.js"></script>
   </body>
 </html>

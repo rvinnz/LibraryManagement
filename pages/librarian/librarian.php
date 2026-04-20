@@ -6,14 +6,19 @@ if (!isset($_SESSION['username'])) {
 }
 
 require_once "../../classes/borrow_transaction.php";
+require_once "../../classes/books.php";
+require_once "../../classes/borrower.php";
 
 // Initialize Transaction Object
 $transObj = new BorrowTransaction();
-
+$bookObj = new Books();
+$borObj = new Borrower();
 // Fetch Recent Issues
 $recentIssued = $transObj->getRecentIssued();
 $borrowedBooks = $transObj->getCountBorrowed();
 $overdued = $transObj->countOverdue();
+$totBooks = $bookObj->countBooks();
+$totborr = $borObj->countBorrower();
 ?>
 
 <!DOCTYPE html>
@@ -25,15 +30,20 @@ $overdued = $transObj->countOverdue();
     <link rel="stylesheet" href="../../assets/css/librarian.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
+    <!-- Sidebar Elements -->
+    <div class="sidebar-overlay"></div>
+    <button id="sidebarToggleBtn" type="button">&#9776;</button>
+
     <img src="../../assets/img/Zamboanga_Peninsula_Polytechnic_State_University.png" alt="ZPPSU Logo" class="top-logo" />
 
     <div class="panel-container">
       <nav class="sidebar">
         <div class="sidebar-header">
           <h3>Librarian Panel</h3>
-          <p>User: <?= htmlspecialchars($_SESSION['username']) ?></p>
+          <p>Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</p>
         </div>
         <ul class="sidebar-links">
           <li><a href="librarian.php" class="active">Dashboard</a></li>
@@ -41,7 +51,8 @@ $overdued = $transObj->countOverdue();
           <li><a href="return_book.php">Return Books</a></li>
           <li><a href="manage_books.php">Manage Books</a></li>
           <li><a href="manage_borrowers.php">View Borrowers</a></li>
-          <li class="logout-link"><a href="../../login.php">Log Out</a></li>
+          <li><a href="view_logs.php">View Logs</a></li>
+          <li class="logout-link"><a href="../../logout.php">Log Out</a></li>
         </ul>
       </nav>
 
@@ -50,11 +61,11 @@ $overdued = $transObj->countOverdue();
           <h1>Librarian Dashboard</h1>
         </header>
 
-        <!-- Summary Cards (Static for now, or connect to DashboardStats if preferred) -->
+        <!-- Summary Cards -->
         <section class="dashboard-cards">
           <div class="summary-card">
             <h4>Books on Loan</h4>
-            <p class="stat-number"><?= $borrowedBooks["borrowed_count"] ?? "none" ?></p>
+            <p class="stat-number"><?= $borrowedBooks["borrowed_count"] ?? "0" ?></p>
             <a href="return_book.php" class="card-link">View All &rarr;</a>
           </div>
           <div class="summary-card">
@@ -63,14 +74,14 @@ $overdued = $transObj->countOverdue();
             <a href="return_book.php" class="card-link">View Details &rarr;</a>
           </div>
           <div class="summary-card">
-            <h4>Total Borrowers</h4>
-            <p class="stat-number">-</p>
-            <a href="#" class="card-link">View All Borrowers &rarr;</a>
+            <h4>Manage Books</h4>
+            <p class="stat-number"><?= $totBooks['count'] ?? "0" ?></p>
+            <a href="manage_books.php" class="card-link">Update Inventory &rarr;</a>
           </div>
           <div class="summary-card">
-            <h4>Books to Re-shelf</h4>
-            <p class="stat-number">0</p>
-            <a href="manage_books.php" class="card-link">View List &rarr;</a>
+            <h4>Manage Borrowers</h4>
+            <p class="stat-number"><?= $totborr['count'] ?? "0" ?></p>
+            <a href="manage_borrowers.php" class="card-link">View List &rarr;</a>
           </div>
         </section>
 
@@ -87,7 +98,7 @@ $overdued = $transObj->countOverdue();
           </div>
         </section>
 
-        <!-- Recently Issued Books (Dynamic Data) -->
+        <!-- Recently Issued Books -->
         <section class="content-card">
           <h2>Recently Issued Books</h2>
           <table id="recent-books-table">
@@ -121,5 +132,8 @@ $overdued = $transObj->countOverdue();
         </section>
       </main>
     </div>
+    
+    <script src="../../assets/js/logout.js"></script>
+    <script src="../../assets/js/admin_sidebar_toggle.js"></script>
   </body>
 </html>
