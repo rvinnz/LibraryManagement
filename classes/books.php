@@ -7,6 +7,17 @@ class Books extends Database {
     public $published_date = "";
     public $genre = "";
 
+    public function countBooks(){
+        $slq = "SELECT COUNT(*) AS count from books";
+
+        $query = $this->connect()->prepare($slq);
+        if( $query->execute() ){
+            return $query->fetch(PDO::FETCH_ASSOC);
+        }else{  
+            return null;
+        }
+    }
+
     // Create
     public function insertBook(){
         $sql = "INSERT INTO books(title, author, published_date, genre)

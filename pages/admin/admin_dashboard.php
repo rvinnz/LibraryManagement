@@ -2,7 +2,7 @@
 require_once "../../classes/dashboard.php";
 session_start();
 
-// Updated Check: Uses is_admin !== 1
+// Uses is_admin !== 1
 if (!isset($_SESSION['username']) || $_SESSION['is_admin'] !== 1) {
     header("Location: ../../login.php");
     exit;
@@ -12,13 +12,12 @@ $admin_username = $_SESSION['username'];
 $statsObj = new DashboardStats();
 
 // Fetch real-time data
-
 $librarianCount = $statsObj->getLibrarianCount();
 $borrowerCount = $statsObj->getBorrowerCount();
 $bookCount = $statsObj->getBookCount();
 $activeLoansCount = $statsObj->getBorrowedCount();
 
-// NEW: Fetch recent activity
+// Fetch recent activity
 $recentActivity = $statsObj->getRecentActivity();
 ?>
 
@@ -31,10 +30,13 @@ $recentActivity = $statsObj->getRecentActivity();
     <link rel="stylesheet" href="../../assets/css/adminpage.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.png">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     
-    <!-- 🌟 ADDED: Hardcoded Button & Overlay -->
+    <!-- Hardcoded Button & Overlay -->
     <div class="sidebar-overlay"></div>
     <button id="sidebarToggleBtn" type="button">&#9776;</button>
 
@@ -52,6 +54,7 @@ $recentActivity = $statsObj->getRecentActivity();
           <li><a href="admin_manage_borrowers.php">View Borrowers</a></li>
           <li><a href="admin_manage_books.php">Manage Books</a></li>
           <li><a href="admin_view_logs.php">View Logs</a></li>
+          <!-- logout-link class hook for JS -->
           <li class="logout-link"><a href="../../logout.php">Log Out</a></li>
         </ul>
       </nav>

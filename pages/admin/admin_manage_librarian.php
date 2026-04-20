@@ -1,13 +1,11 @@
 <?php
-require_once "../../classes/account.php";
 session_start();
-
-// Updated Check: Uses is_admin !== 1
+// Uses is_admin !== 1
 if (!isset($_SESSION['username']) || $_SESSION['is_admin'] !== 1) {
     header("Location: ../../login.php");
     exit;
 }
-$admin_username = $_SESSION['username'];
+require_once "../../classes/account.php";
 
 $userObj = new User();
 
@@ -21,31 +19,42 @@ $librarian = [
     'password' => ''
 ];
 $error = [];
-$message = "";
 $isEditing = false;
 
-// 1. Handle DELETE
+$swal_message = "";
+$swal_type = "";
+
+if (isset($_SESSION['swal_message'])) {
+    $swal_message = $_SESSION['swal_message'];
+    $swal_type = $_SESSION['swal_type']; // 'success' or 'error'
+    unset($_SESSION['swal_message']);
+    unset($_SESSION['swal_type']);
+}
+
+// Handle DELETE
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     if ($userObj->deleteLibrarian($id)) {
-        $message = "Librarian deleted successfully!";
+        $_SESSION['swal_message'] = "Librarian deleted successfully!";
+        $_SESSION['swal_type'] = "success";
+        header("Location: admin_manage_librarian.php");
+        exit;
     } else {
         $error['error'] = "Failed to delete librarian.";
     }
 }
 
-// 2. Handle EDIT (Populate Form)
+// Handle EDIT (Populate Form)
 if (isset($_GET['edit'])) {
     $isEditing = true;
     $id = $_GET['edit'];
     $fetchedLib = $userObj->fetchLibrarian($id);
     if ($fetchedLib) {
         $librarian = $fetchedLib;
-        // Password is kept in the variable so it can be displayed
     }
 }
 
-// 3. Handle FORM SUBMISSION (Add or Update)
+// Handle FORM SUBMISSION (Add or Update)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $lib_id = $_POST['lib_id'] ?? '';
     $first_name = $_POST['first_name'] ?? '';
@@ -82,19 +91,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 
                 if($userObj->updateLibrarian($lib_id)){
-                    $message = "Librarian updated successfully!";
-                    $isEditing = false;
-                    // Clear form
-                    $librarian = ['id' => '', 'first_name' => '', 'last_name' => '', 'user_name' => '', 'password' => ''];
+                    $_SESSION['swal_message'] = "Librarian updated successfully!";
+                    $_SESSION['swal_type'] = "success";
+                } else {
+                    $error['error'] = "Failed to update librarian.";
                 }
             } else {
                 // --- CREATE ---
                 $userObj->password = $password;
                 if($userObj->registerLibrarian()){
-                    $message = "Librarian created successfully!";
-                    $librarian = ['id' => '', 'first_name' => '', 'last_name' => '', 'user_name' => '', 'password' => ''];
+                    $_SESSION['swal_message'] = "Librarian created successfully!";
+                    $_SESSION['swal_type'] = "success";
+                } else {
+                    $error['error'] = "Failed to create librarian.";
                 }
             }
+
+            // Redirect if no errors
+            if(empty($error)){
+                header("Location: admin_manage_librarian.php");
+                exit;
+            }
+
         } catch (Exception $e) {
             $error['error'] = $e->getMessage();
         }
@@ -114,6 +132,9 @@ $allLibrarians = $userObj->displayLibrarians();
     <link rel="stylesheet" href="../../assets/css/adminpage.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.png">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     <div class="sidebar-overlay"></div>
@@ -125,7 +146,7 @@ $allLibrarians = $userObj->displayLibrarians();
       <nav class="sidebar">
         <div class="sidebar-header">
           <h3>Admin Panel</h3>
-          <p>Welcome, <?= htmlspecialchars($admin_username) ?>!</p>
+          <p>Welcome, Admin!</p>
         </div>
         <ul class="sidebar-links">
           <li><a href="admin_dashboard.php">Dashboard</a></li>
@@ -145,14 +166,36 @@ $allLibrarians = $userObj->displayLibrarians();
         <section class="content-card">
           <h2><?= $isEditing ? "Edit Librarian" : "Add New Librarian" ?></h2>
           
+          <!-- SweetAlert Trigger Script -->
+          <?php if(!empty($swal_message)): ?>
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      Swal.fire({
+                          icon: '<?= $swal_type ?>',
+                          title: '<?= $swal_type === "success" ? "Success!" : "Error!" ?>',
+                          text: '<?= addslashes($swal_message) ?>',
+                          timer: 2000,
+                          showConfirmButton: false
+                      });
+                  });
+              </script>
+          <?php endif; ?>
+
+          <!-- PHP Error Display (Fallback) -->
+          <?php if(!empty($error)): ?>
+             <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      let errorMsg = '<?= addslashes(implode(" ", $error)) ?>';
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: errorMsg
+                      });
+                  });
+              </script>
+          <?php endif; ?>
+          
           <form id="add-librarian-form" method="post">
-            
-            <div class="message-container" style="margin-bottom: 20px; margin-top: 5px;">
-                <p class="error"><?= $error['all'] ?? ""?></p>
-                <p class="error"><?= $error['password'] ?? ""?></p>
-                <p class="error"><?= $error['error'] ?? ""?></p>
-                <p class="message" style="color: green"><?= $message ?? "" ?></p>
-            </div>
             
             <input type="hidden" name="lib_id" value="<?= $librarian['id'] ?? '' ?>">
 
@@ -214,8 +257,10 @@ $allLibrarians = $userObj->displayLibrarians();
                 </td>
                 <td>
                   <a href="admin_manage_librarian.php?edit=<?= $lib['id'] ?>" class="btn-action btn-edit" style="text-decoration:none">Edit</a>
+                  
+                  <!-- SweetAlert Delete Button -->
                   <a href="admin_manage_librarian.php?delete=<?= $lib['id'] ?>" 
-                     class="btn-action btn-delete" 
+                     class="btn-action btn-delete btn-delete-swal" 
                      style="text-decoration:none">Delete</a>
                 </td>
               </tr>
@@ -231,6 +276,7 @@ $allLibrarians = $userObj->displayLibrarians();
       </main>
     </div>
     <script src="../../assets/js/logout.js"></script>
+    
     <script src="../../assets/js/delete_confirmation.js"></script>
     <script src="../../assets/js/admin_sidebar_toggle.js"></script>
   </body>

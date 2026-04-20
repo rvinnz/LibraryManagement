@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btn = document.getElementById('sidebarToggleBtn');
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
-    const overlay = document.querySelector('.sidebar-overlay'); // Might be null on desktop
+    const overlay = document.querySelector('.sidebar-overlay');
 
     if (btn && sidebar && mainContent) {
         

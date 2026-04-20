@@ -7,17 +7,31 @@ if (!isset($_SESSION['username'])) {
 
 require_once "../../classes/borrow_transaction.php";
 $transObj = new BorrowTransaction();
+
 $message = "";
 $error = "";
 
+if (isset($_SESSION['success_msg'])) {
+    $message = $_SESSION['success_msg'];
+    unset($_SESSION['success_msg']); 
+}
+if (isset($_SESSION['error_msg'])) {
+    $error = $_SESSION['error_msg'];
+    unset($_SESSION['error_msg']);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['return_id'])) {
     $transaction_id = $_POST['return_id'];
+    
     if ($transObj->returnBook($transaction_id)) {
-        $message = "Book returned successfully!";
+        $_SESSION['success_msg'] = "Book returned successfully!";
+        header("Location: return_book.php");
+        exit;
     } else {
         $error = "Failed to process return.";
     }
 }
+
 $activeLoans = $transObj->getActiveBorrows();
 ?>
 
@@ -30,23 +44,31 @@ $activeLoans = $transObj->getActiveBorrows();
     <link rel="stylesheet" href="../../assets/css/librarian.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.png">
+    
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
+    <!-- Sidebar Elements -->
+    <div class="sidebar-overlay"></div>
+    <button id="sidebarToggleBtn" type="button">&#9776;</button>
+
     <img src="../../assets/img/Zamboanga_Peninsula_Polytechnic_State_University.png" alt="ZPPSU Logo" class="top-logo" />
 
     <div class="panel-container">
       <nav class="sidebar">
         <div class="sidebar-header">
           <h3>Librarian Panel</h3>
-          <p>User: <?= htmlspecialchars($_SESSION['username']) ?></p>
+          <p>Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</p>
         </div>
         <ul class="sidebar-links">
           <li><a href="librarian.php">Dashboard</a></li>
-          <li><a href="issue_book.php">Issue Books</a></li> <!-- Working Link -->
-          <li><a href="return_book.php" class="active">Return Books</a></li> <!-- Active -->
+          <li><a href="issue_book.php">Issue Books</a></li> 
+          <li><a href="return_book.php" class="active">Return Books</a></li> 
           <li><a href="manage_books.php">Manage Books</a></li>
           <li><a href="manage_borrowers.php">View Borrowers</a></li>
-          <li class="logout-link"><a href="../../login.php">Log Out</a></li>
+          <li><a href="view_logs.php">View Logs</a></li>
+          <li class="logout-link"><a href="../../logout.php">Log Out</a></li>
         </ul>
       </nav>
 
@@ -57,11 +79,32 @@ $activeLoans = $transObj->getActiveBorrows();
 
         <section class="content-card">
           <h2>Active Borrowed Books</h2>
+          
+          <!-- Optional: Display PHP Success/Error messages using standard HTML or SweetAlert via JS below -->
           <?php if($message): ?>
-              <p style="color: green; background: #e6fffa; padding: 10px; border-radius: 5px; border: 1px solid green;"><?= $message ?></p>
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      Swal.fire({
+                          icon: 'success',
+                          title: 'Success!',
+                          text: '<?= addslashes($message) ?>',
+                          timer: 2000,
+                          showConfirmButton: false
+                      });
+                  });
+              </script>
           <?php endif; ?>
+          
           <?php if($error): ?>
-              <p style="color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; border: 1px solid red;"><?= $error ?></p>
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Oops...',
+                          text: '<?= addslashes($error) ?>'
+                      });
+                  });
+              </script>
           <?php endif; ?>
 
           <table id="recent-books-table">
@@ -98,9 +141,10 @@ $activeLoans = $transObj->getActiveBorrows();
                         <?= $isOverdue ? "<br><small>Overdue</small>" : "" ?>
                     </td>
                     <td>
-                        <form method="post" onsubmit="return confirm('Mark this book as returned?');">
+                        <!-- Form with class for JS hook -->
+                        <form method="post">
                             <input type="hidden" name="return_id" value="<?= $loan['transaction_id'] ?>">
-                            <button type="submit" class="btn-secondary" style="padding: 8px 15px; font-size: 13px;">Return</button>
+                            <button type="submit" class="btn-secondary btn-return-trigger" style="padding: 8px 15px; font-size: 13px;">Return</button>
                         </form>
                     </td>
                   </tr>
@@ -113,5 +157,8 @@ $activeLoans = $transObj->getActiveBorrows();
         </section>
       </main>
     </div>
+    <script src="../../assets/js/logout.js"></script>
+    <script src="../../assets/js/admin_sidebar_toggle.js"></script>
+    <script src="../../assets/js/return_book_modal.js"></script>
   </body>
 </html>

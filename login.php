@@ -5,6 +5,11 @@ $userObj = new User();
 
 $user = [];
 $error = [];
+
+// Handle success message from signup
+$success_msg = $_SESSION['register_success'] ?? null;
+unset($_SESSION['register_success']); // Clear after getting it
+
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
     $user["username"] = $_POST["username"];
@@ -24,7 +29,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
         if($loginUser){
             $_SESSION['username'] = $user['username'];
             $_SESSION['password'] = $user['password'];
-            $_SESSION['is_admin'] = $loginUser['is_admin'];
+            $_SESSION['is_admin'] = $loginUser['is_admin']; 
 
             if($loginUser['is_admin']==1){
                 header("Location: pages/admin/admin_dashboard.php");
@@ -38,8 +43,6 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
 
     }
 }
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,6 +52,25 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
 <title>ZPPSULibrary - Login</title>
 <link rel="stylesheet" href="assets/css/login.css">
 <link rel="icon" type="image/x-icon" href="assets/icons/favicon.png">
+<style>
+    .reg-success-banner {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        border: 1px solid #c3e6cb;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .login-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
 </head>
 
 <body class="login-page">
@@ -57,43 +79,38 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     <img src="assets/img/Zamboanga_Peninsula_Polytechnic_State_University.png" alt="ZPPSU Logo" class="top-logo">
 </div>
 
-<div class="login-container">
-    <h1>ZPPSU Library</h1>
-    <h2>Log In</h2>
-    <p style="color: red;"><?= $error['login'] ?? '' ?></p>
-    <form action="" method="post">
-        <input type="text" name="username" placeholder="Username">
-        <p style="color: red"><?= $error["username"] ?? '' ?></p>
-        <input type="password" name="password" placeholder="Password">
-        <p style="color: red;"><?= $error["password"] ?? '' ?></p>
-        
-        <input type="submit" value="Log In">
-    </form>
-        <p>Don’t have an account? <a href="signup.php">Sign Up</a></p>
+<div class="login-wrapper">
+    <div class="login-container">
+        <h1>ZPPSU Library</h1>
+        <h2>Log In</h2>
+
+        <!-- Success Message moved INSIDE container -->
+        <?php if ($success_msg): ?>
+            <div class="reg-success-banner">
+                <?= htmlspecialchars($success_msg) ?>
+            </div>
+        <?php endif; ?>
+
+        <p style="color: red;"><?= $error['login'] ?? '' ?></p>
+        <form action="" method="post">
+            <input type="text" name="username" placeholder="Username">
+            <p style="color: red"><?= $error["username"] ?? '' ?></p>
+            
+            <!-- Password Field with Toggle -->
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Password">
+                <span id="togglePassword" class="toggle-password">Show</span>
+            </div>
+            <p style="color: red;"><?= $error["password"] ?? '' ?></p>
+            
+            <input type="submit" value="Log In">
+        </form>
+            <p>Don’t have an account? <a href="signup.php">Sign Up</a></p>
+    </div>
 </div>
 
-<script>
-function login() {
-    const role = document.getElementById("role").value;
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-
-    const accounts = {
-        admin: { username: "admin", password: "bayotarvin123" },
-        librarian: { username: "librarian", password: "lib123" },
-        borrower: { username: "borrower", password: "borrow123" }
-    };
-
-    if (user === accounts[role].username && pass === accounts[role].password) {
-        if (role === "admin") window.location.href = "admin.html";
-        if (role === "librarian") window.location.href = "librarian.html";
-        if (role === "borrower") window.location.href = "borrower.html";
-    } else {
-        alert("Incorrect username or password!");
-    }
-}
-</script>
+<!-- Load Script -->
+<script src="assets/js/show_password.js"></script>
 
 </body>
 </html>
-

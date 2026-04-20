@@ -36,7 +36,8 @@ CREATE TABLE books(
     author VARCHAR(100) NOT NULL,
     published_date TIMESTAMP NOT NULL,
     genre VARCHAR(25) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
+    is_available BOOLEAN DEFAULT true;  
 );
 
 CREATE TABLE borrow_transaction(

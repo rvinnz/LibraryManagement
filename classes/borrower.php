@@ -80,5 +80,17 @@ class Borrower extends Database {
         
         return $query->execute();
     }
+
+    public function countBorrower(){
+        $sql = "SELECT COUNT(*) AS count FROM borrowers";
+        $query = $this->connect()->prepare($sql);
+
+        if($query->execute()){
+            return $query->fetch(PDO::FETCH_ASSOC);
+        }else{
+            return null;
+        }
+
+    }
 }
 ?>
